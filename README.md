@@ -6,7 +6,7 @@ Seamlessly navigate between
 [Neovim](https://neovim.io/) windows (of a Kitty-hosted Neovim)
 using the same key combinations, e.g., `Super+h/j/k/l`.
 
-The keys are bound to a script in the hyprland config that relays keys to a Kitty instance in the focused window or, if present, a Neovim instance that running in Kitty. A small Neovim plugin ensures that navigating inside Neovim as well as 'leaving' Neovim works as intended.
+The keys are bound to a script in the hyprland config that relays keys to a Kitty instance in the focused window or, if present, a Neovim instance that runs in Kitty. A small Neovim plugin ensures that navigating inside Neovim as well as 'leaving' Neovim works as intended.
 
 
 
