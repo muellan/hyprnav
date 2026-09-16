@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+# navigate h|j|k|l — Neovim split <-> Kitty window <-> Hyprland window
+set -uo pipefail
+
+case ${1-} in
+  h) hdir=l kdir=left   ;;
+  j) hdir=d kdir=bottom ;;
+  k) hdir=u kdir=top    ;;
+  l) hdir=r kdir=right  ;;
+  *) echo "usage: ${0##*/} h|j|k|l" >&2; exit 2 ;;
+esac
+
+hypr() { 
+    hyprctl dispatch "hl.dsp.focus({ direction='$hdir' })" >/dev/null; exit 0;  
+}
+
+pid=$(hyprctl activewindow -j | jq -r '.pid // empty')
+sock=${XDG_RUNTIME_DIR}/kitty-${pid}
+[[ -n $pid && -S $sock ]] || hypr   # not a kitty window (or no socket)
+
+k() { kitten @ --to "unix:$sock" "$@"; }
+
+# Neovim server in the active window of the focused kitty OS window, if any
+srv=$(k ls 2>/dev/null | jq -r '
+  .[] | select(.is_focused) | .tabs[] | select(.is_active)
+      | .windows[] | select(.is_active) | .user_vars.nvim_server // empty')
+
+if [[ -n $srv ]]; then
+  moved=$(timeout 0.3 nvim --server "$srv" --remote-expr "v:lua.Navigate('$1')" 2>/dev/null)
+  [[ $moved == 1 ]] && exit 0
+fi
+
+k focus-window --match "neighbor:$kdir" 2>/dev/null && exit 0
+hypr
